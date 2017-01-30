@@ -19,24 +19,30 @@ app.use(express.static(publicPath));
 
 io.on('connection', (socket) => {
   socket.on('join', (params, callback) => {
-    if(!isRealString(params.name) || !isRealString(params.room)) {
+    const chatRoom = params.room.toLowerCase();
+
+    if(!isRealString(params.name) || !isRealString(chatRoom)) {
       return callback('Name and room name are required');
     }
 
-  socket.join(params.room);
-  users.removeUser(socket.id);
-  users.addUser(socket.id, params.name, params.room);
+    if(users.isUserAlreadyTaken(params.name)) {
+      return callback('Username is already taken. Please, choose a new user');
+    }
 
-  io.to(params.room).emit('updateUserList', users.getUserList(params.room));
-  socket.emit(
-    'newMessage',
-    generateMessage('Admin', 'Welcome To the chat app')
-  );
-  socket.broadcast.to(params.room).emit(
-    'newMessage',
-    generateMessage('Admin', `${params.name} has joined.`)
-  );
-  callback();
+    socket.join(chatRoom);
+    users.removeUser(socket.id);
+    users.addUser(socket.id, params.name, chatRoom);
+
+    io.to(chatRoom).emit('updateUserList', users.getUserList(chatRoom));
+    socket.emit(
+      'newMessage',
+      generateMessage('Admin', 'Welcome To the chat app')
+    );
+    socket.broadcast.to(chatRoom).emit(
+      'newMessage',
+      generateMessage('Admin', `${params.name} has joined.`)
+    );
+    callback();
   });
 
   socket.on('createMessage', (message, callback) => {

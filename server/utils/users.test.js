@@ -76,4 +76,11 @@ describe('Users class', () => {
 
     expect(userList).toEqual(['Jen']);
   });
+
+  it('should return user object for user already taken', () => {
+    const name = 'Julie';
+    const user = users.isUserAlreadyTaken(name);
+
+    expect(user.name).toEqual(name);
+  });
 });

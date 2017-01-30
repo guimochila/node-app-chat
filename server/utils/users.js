@@ -30,6 +30,10 @@ class Users {
     return namesArray;
   }
 
+  isUserAlreadyTaken(newUser) {
+    return this.users.find((user) => user.name === newUser);
+  }
+
 }
 
-module.exports = { Users };
+module.exports = {Users};
