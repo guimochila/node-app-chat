@@ -9,7 +9,7 @@ const { Users } = require('./utils/users');
 
 const port = process.env.PORT || 3000;
 const publicPath = path.join(__dirname, '../public');
-const app = express()
+const app = express();
 const server = http.createServer(app);
 const io = socketIO(server);
 
@@ -39,7 +39,6 @@ io.on('connection', (socket) => {
 
     if (user && isRealString(message.text)) {
       io.to(user.room).emit('newMessage', generateMessage(user.name, message.text));
-   
     }
 
    callback();
