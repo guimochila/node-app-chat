@@ -119,6 +119,7 @@ var MyChatController = (function(io, $, moment, Mustache) {
     renderMessage: function(message) {
       var html = Mustache.render(uiCtrl.DOM.$messageTemplate.html(), message);
       uiCtrl.DOM.$messages.append(html);
+      uiCtrl.scrollToBottom();
     },
 
     renderUserList: function(users) {
@@ -134,6 +135,7 @@ var MyChatController = (function(io, $, moment, Mustache) {
         uiCtrl.DOM.$locationMessage.html(),
         location);
       uiCtrl.DOM.$messages.append(htmlLocation);
+      uiCtrl.scrollToBottom();
     },
 
     clearInput: function() {
@@ -153,6 +155,20 @@ var MyChatController = (function(io, $, moment, Mustache) {
           .text('Sending location...');
       } else if(status === 'enable') {
         uiCtrl.DOM.$locationBtn.removeAttr('disabled').text('Send location');
+      }
+    },
+    scrollToBottom: function() {
+      var messages = uiCtrl.DOM.$messages;
+      var newMessage = messages.children('li:last-child');
+      var clientHeight = messages.prop('clientHeight');
+      var scrollTop = messages.prop('scrollTop');
+      var scrollHeight = messages.prop('scrollHeight');
+      var newMessageHeight = newMessage.innerHeight();
+      var lastMessageHeight = newMessage.prev().innerHeight();
+
+      if(clientHeight + scrollTop
+        + newMessageHeight + lastMessageHeight >= scrollHeight) {
+        messages.scrollTop(scrollHeight);
       }
     },
 
