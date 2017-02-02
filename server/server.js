@@ -1,6 +1,7 @@
 const path = require('path');
 const http = require('http');
 const express = require('express');
+const exphbs = require('express-handlebars');
 const socketIO = require('socket.io');
 
 const {generateMessage, generateLocationMessage} = require('./utils/message');
@@ -14,6 +15,20 @@ const server = http.createServer(app);
 const io = socketIO(server);
 
 const users = new Users();
+
+const viewsPath = path.join(__dirname, 'views/');
+const hbs = exphbs.create({
+  defaultLayout: 'main',
+  extname: '.hbs',
+});
+
+app.set('views', viewsPath);
+app.engine('hbs', hbs.engine);
+app.set('view engine', 'hbs');
+
+app.get('/', (req, res) => {
+  res.render('home');
+});
 
 app.use(express.static(publicPath));
 
@@ -34,8 +49,6 @@ io.on('connection', (socket) => {
     }
 
     socket.join(userRoom);
-    // users.removeUser(socket.id);
-    console.log(users.chatRooms);
     users.addUser(socket.id, params.name, userRoom);
 
     io.to(userRoom).emit('updateUserList', users.getUserList(userRoom));
