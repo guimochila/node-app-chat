@@ -16,18 +16,19 @@ const io = socketIO(server);
 
 const users = new Users();
 
-const viewsPath = path.join(__dirname, 'views/');
+const viewsPath = path.join(__dirname, 'views');
 const hbs = exphbs.create({
+  layoutsDir: path.join(__dirname, 'views/layouts'),
   defaultLayout: 'main',
   extname: '.hbs',
 });
 
+app.engine('.hbs', hbs.engine);
 app.set('views', viewsPath);
-app.engine('hbs', hbs.engine);
-app.set('view engine', 'hbs');
+app.set('view engine', '.hbs');
 
 app.get('/', (req, res) => {
-  res.render('home');
+  res.render('home', {rooms: users.getListRooms()});
 });
 
 app.use(express.static(publicPath));
