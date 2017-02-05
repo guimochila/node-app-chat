@@ -1,46 +1,59 @@
-<div class="centered-form__form">
-      <form action="/chat.html" name="chat-form" onsubmit="return validateForm()">
-        <div class="form-field"></div>
-          <h3>Join a chat</h3>
-        <div class="form-field">
-          <label for="name">Display name</label>
-          <input type="text" name="name" autofocus placeholder="Enter your name"/>
-        </div>
-        <div class="form-field">
-          <label for="room">Create a room</label>
-          <input type="text" name="room" id="newRoom" placeholder="Enter a room name"/>
-        </div>
-        <div class="form-field">
-          <label for="room">Select a room</label>
-          <select name="room" id="createdRoom">
-            <option value="">Rooms</option>
-            {{#each rooms}}
-            <option value="{{this}}">{{this}}</option>
-            {{/each}}
+<div class="centered-form">
+  <div class="centered-form__form">
+    <form action="/chat" name="chat-form" method="POST" onsubmit="return validateForm()">
+      <div class="form-field"></div>
+      <h3>Join a chat</h3>
+      <div class="form-field">
+        <label for="name">Display name</label> {{#if name}}
+        <input type="text" name="name" autofocus placeholder="{{name}}" value="{{name}}" /> {{else}}
+        <input type="text" name="name" autofocus placeholder="{{name}}" value="{{name}}" /> {{/if}}
+      </div>
+      <div class="form-field">
+        <label for="room">Create a room</label>
+        <input type="text" name="room" id="newRoom" placeholder="Enter a room name" />
+      </div>
+      <div class="form-field">
+        <label for="room">Select a room</label>
+        <select name="room" id="createdRoom">
+            {{#if rooms}}
+              {{#each rooms}}
+              <option value="{{this}}">{{this}}</option>
+              <option value=""></option>
+              {{/each}}
+            {{else}}
+              {{#if room}}
+              <option value="{{room}}">{{room}}</option>
+              <option value=""></option>
+              {{else}}
+              <option value="">No rooms available</option>
+              {{/if}}
+            {{/if}}
           </select>
-        </div>
-        <div class="form-field">
-          <button type="submit">Join</button>
-        </div>
-      </form>
-
-      <script>
-        function validateForm() {
-          var newRoom = document.getElementById('newRoom');
-          var createdRoom = document.getElementById('createdRoom');
-
-          if(newRoom.value === '' && createdRoom.value === '') {
-            alert('Choose a room');
-            return false;
-          }
-
-          if (newRoom.value !== ''){
-            createdRoom.remove();
-          } else if (createdRoom.value !== '') {
-            newRoom.remove();
-          }
-        
-          return true;
-        }
-      </script>
+      </div>
+      <div class="form-field">
+        <button type="submit">Join</button>
+      </div>
+    </form>
+  </div>
 </div>
+
+
+<script>
+  function validateForm() {
+    var newRoom = document.getElementById('newRoom');
+    var createdRoom = document.getElementById('createdRoom');
+
+    if (newRoom.value === '' && createdRoom.value === '') {
+      alert('Choose a room');
+      return false;
+    }
+
+    if (newRoom.value !== '') {
+      createdRoom.remove();
+    } else if (createdRoom.value !== '') {
+      newRoom.remove();
+    }
+
+    return true;
+  }
+</script>

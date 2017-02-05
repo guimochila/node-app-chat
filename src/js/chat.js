@@ -78,7 +78,7 @@ var MyChatController = (function(io, $, moment, Mustache) {
     },
 
     connect: function() {
-      socket.emit('join', uiCtrl.DOM.$params, function(err) {
+      socket.emit('join', function(err) {
         if (err) {
           alert(err);
           window.location.href = '/';

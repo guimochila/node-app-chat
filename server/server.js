@@ -1,8 +1,12 @@
 const path = require('path');
 const http = require('http');
 const express = require('express');
+const bodyParser = require('body-parser');
+const cookieParser = require('cookie-parser');
 const exphbs = require('express-handlebars');
 const socketIO = require('socket.io');
+const socketCookieParser = require('socket.io-cookie');
+const base64 = require('base-64');
 
 const {generateMessage, generateLocationMessage} = require('./utils/message');
 const {isRealString} = require('./utils/validation');
@@ -21,27 +25,65 @@ const hbs = exphbs.create({
   layoutsDir: path.join(__dirname, 'views/layouts'),
   defaultLayout: 'main',
   extname: '.hbs',
+  helpers: {
+            'raw-helper': function(options) {
+              return options.fn();
+            },
+        },
 });
+
 
 app.engine('.hbs', hbs.engine);
 app.set('views', viewsPath);
 app.set('view engine', '.hbs');
 
+app.use(bodyParser.urlencoded({extended: false}));
+app.use(cookieParser());
+
 app.get('/', (req, res) => {
-  res.render('home', {rooms: users.getListRooms()});
+  let name;
+  let room;
+
+  if(req.cookies.chatName && req.cookies.chatRoom) {
+    name = base64.decode(req.cookies.chatName);
+    room = base64.decode(req.cookies.chatRoom);
+  }
+  res.render('home', {
+    rooms: users.getListRooms(),
+    name,
+    room,
+  });
+});
+
+app.get('/chat', (req, res) => {
+  res.redirect('/');
+});
+
+app.post('/chat', (req, res) => {
+  const name = req.body.name;
+  const room = req.body.room;
+
+  res.cookie('chatName', base64.encode(name));
+  res.cookie('chatRoom', base64.encode(room));
+  res.render('chat', {});
 });
 
 app.use(express.static(publicPath));
 
-io.on('connection', (socket) => {
-  socket.on('join', (params, callback) => {
-    const userRoom = params.room.toLowerCase();
+io.use(socketCookieParser);
 
-    if(!isRealString(params.name) || !isRealString(userRoom)) {
+io.on('connection', (socket) => {
+  socket.on('join', (callback) => {
+    const userRoom = base64.decode(
+      socket.request.headers.cookie.chatRoom
+      ).toLowerCase();
+    const userName = base64.decode(socket.request.headers.cookie.chatName);
+
+    if(!isRealString(userName) || !isRealString(userRoom)) {
       return callback('Name and room name are required');
     }
 
-    if(users.isUserAlreadyTaken(params.name)) {
+    if(users.isUserAlreadyTaken(userName)) {
       return callback('Username is already taken. Please, choose a new user');
     }
 
@@ -50,7 +92,7 @@ io.on('connection', (socket) => {
     }
 
     socket.join(userRoom);
-    users.addUser(socket.id, params.name, userRoom);
+    users.addUser(socket.id, userName, userRoom);
 
     io.to(userRoom).emit('updateUserList', users.getUserList(userRoom));
     socket.emit(
@@ -59,9 +101,8 @@ io.on('connection', (socket) => {
     );
     socket.broadcast.to(userRoom).emit(
       'newMessage',
-      generateMessage('Admin', `${params.name} has joined.`)
+      generateMessage('Admin', `${userName} has joined.`)
     );
-    callback();
   });
 
   socket.on('createMessage', (message, callback) => {
