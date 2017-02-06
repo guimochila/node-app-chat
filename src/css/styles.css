@@ -5,6 +5,11 @@
   font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif;
   font-weight: 300;
   font-size: .95rem;
+
+}
+
+body {
+  display: flex;
 }
 
 ul, li {
@@ -77,10 +82,6 @@ button:disabled {
 .form-field input, .form-field select {
   border: 1px solid #e1e1e1;
   padding: 10px;
-}
-
-.chat {
-  display: flex;
 }
 
 .chat__sidebar {
